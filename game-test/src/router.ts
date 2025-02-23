@@ -5,7 +5,7 @@ import Movement from "./components/Movement.vue";
 
 const routes = [
   { path: "/", component: Movement },
-  { path: "/map2", component: Map2 },
+  { path: "/map2/:positionX/:positionY", component: Map2 },
   { path: "/map3", component: Map3 },
 ];
 

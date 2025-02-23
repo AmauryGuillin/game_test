@@ -1,10 +1,11 @@
 <script setup lang="ts">
 import { onMounted, onUnmounted, ref } from "vue";
-import { useRouter } from "vue-router";
+import { useRoute, useRouter } from "vue-router";
 
 const router = useRouter();
-const positionX = ref(900);
-const positionY = ref(350);
+const route = useRoute();
+const positionX = ref(Number(route.params.positionX));
+const positionY = ref(Number(route.params.positionY));
 
 function moveDot(input: KeyboardEvent) {
   if (input.key === "ArrowUp") {

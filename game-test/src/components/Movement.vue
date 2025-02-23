@@ -24,7 +24,8 @@ function moveDot(input: KeyboardEvent) {
 
   if (positionX.value < 0) {
     console.log("hors limites X gauche");
-    router.push("/map2");
+    positionX.value = window.innerWidth - positionX.value - 200;
+    router.push(`/map2/${positionX.value}/${positionY.value}`);
   }
 
   if (positionY.value >= window.innerHeight - 100) {
