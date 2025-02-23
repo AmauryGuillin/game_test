@@ -63,7 +63,7 @@ onUnmounted(() => {
 
 <template>
   <section
-    class="h-screen max-h-screen w-full max-w-full overflow-x-hidden bg-gray-900 relative"
+    class="h-screen max-h-screen w-full max-w-full overflow-x-hidden relative bg-[url(/maps/route-101.png)] bg-no-repeat bg-cover bg-center"
   >
     <div class="text-white">Movement</div>
     <div
