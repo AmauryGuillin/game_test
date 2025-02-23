@@ -1,10 +1,23 @@
 <script setup lang="ts">
 import { onMounted, onUnmounted, ref } from "vue";
-import { useRouter } from "vue-router";
+import { useRoute, useRouter } from "vue-router";
 
 const router = useRouter();
-const positionX = ref(900);
-const positionY = ref(350);
+const route = useRoute();
+
+let alreadyX = 0;
+let alreadyY = 0;
+
+if (route.params.positionX) {
+  alreadyX = Number(route.params.positionX);
+}
+
+if (route.params.positionY) {
+  alreadyY = Number(route.params.positionY);
+}
+
+const positionX = alreadyX !== 0 ? ref(alreadyX) : ref(window.innerWidth / 2);
+const positionY = alreadyY !== 0 ? ref(alreadyY) : ref(window.innerHeight / 2);
 
 function moveDot(input: KeyboardEvent) {
   if (input.key === "ArrowUp") {
@@ -19,7 +32,8 @@ function moveDot(input: KeyboardEvent) {
 
   if (positionX.value >= window.innerWidth - 100) {
     console.log("hors limites X droite");
-    router.push("/map3");
+    positionX.value = window.innerWidth - positionX.value;
+    router.push(`/map3/${positionX.value}/${positionY.value}`);
   }
 
   if (positionX.value < 0) {

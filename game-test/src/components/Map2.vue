@@ -20,7 +20,8 @@ function moveDot(input: KeyboardEvent) {
 
   if (positionX.value >= window.innerWidth - 100) {
     console.log("hors limites X droite");
-    router.push("/");
+    positionX.value = window.innerWidth - positionX.value;
+    router.push(`/${positionX.value}/${positionY.value}`);
   }
 
   if (positionX.value < 0) {
