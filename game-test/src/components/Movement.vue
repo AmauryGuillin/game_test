@@ -23,23 +23,23 @@ if (route.params.positionY) {
   alreadyY = Number(route.params.positionY);
 }
 
-const positionX = alreadyX !== 0 ? ref(alreadyX) : ref(window.innerWidth / 2);
+const positionX = alreadyX !== 0 ? ref(alreadyX) : ref(window.innerWidth / 4);
 const positionY = alreadyY !== 0 ? ref(alreadyY) : ref(window.innerHeight / 2);
 
-const obstacle1PosX = 25;
-const obstacle1PosY = 40;
+const obstacle1PosX = 25.3;
+const obstacle1PosY = 44;
 
 const obstacle2PosX = 40;
-const obstacle2PosY = 85;
+const obstacle2PosY = 71;
 
 const obstacle3PosX = 35;
-const obstacle3PosY = 14;
+const obstacle3PosY = 28.6;
 
 const obstacle4PosX = 32.5;
-const obstacle4PosY = 14;
+const obstacle4PosY = 28.6;
 
 const obstacle5PosX = 10;
-const obstacle5PosY = 24;
+const obstacle5PosY = 34;
 
 function checkCollision(newX: number, newY: number) {
   const player = character.value;
@@ -107,19 +107,25 @@ function moveDot(input: KeyboardEvent) {
     }
   }
 
-  if (positionX.value >= window.innerWidth - 100) {
+  if (positionX.value >= 1150 - 100) {
     console.log("hors limites X droite");
-    positionX.value = window.innerWidth - positionX.value;
-    router.push(`/map3/${positionX.value}/${positionY.value}`);
+    //positionX.value = 1150 - positionX.value;
+    alert("Work in progress :)\nPlayer position is reset");
+    positionX.value = window.innerWidth / 4;
+    positionY.value = window.innerHeight / 2;
+    //router.push(`/map3/${positionX.value}/${positionY.value}`);
   }
 
   if (positionX.value < 0) {
     console.log("hors limites X gauche");
-    positionX.value = window.innerWidth - positionX.value - 200;
-    router.push(`/map2/${positionX.value}/${positionY.value}`);
+    //positionX.value = 1150 - positionX.value - 200;
+    alert("Work in progress :)\nPlayer position is reset");
+    positionX.value = window.innerWidth / 4;
+    positionY.value = window.innerHeight / 2;
+    //router.push(`/map2/${positionX.value}/${positionY.value}`);
   }
 
-  if (positionY.value >= window.innerHeight - 100) {
+  if (positionY.value >= 920 - 100) {
     console.log(window.innerHeight);
     console.log("hors limites Y inférieure");
   }
@@ -139,47 +145,49 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <section
-    class="h-screen max-h-screen w-full max-w-full overflow-x-hidden relative bg-[url(/maps/route-101.png)] bg-no-repeat bg-cover bg-center"
-  >
-    <div class="text-white">Movement</div>
-    <div
-      id="character"
-      ref="character"
-      class="h-20 w-20 absolute z-50 flex justify-center items-center"
-      :style="{ left: `${positionX}px`, top: `${positionY}px` }"
+  <section class="bg-black h-screen flex justify-center items-center">
+    <section
+      class="h-[920px] w-[1150px] max-w-[1150px] mx-auto overflow-x-hidden relative bg-[url(/maps/route-101.png)] bg-no-repeat bg-cover bg-center"
     >
-      <img src="/test-char.gif" alt="player image" class="w-20 h-20" />
-    </div>
-    <div
-      id="obstacle1"
-      ref="obstacle1"
-      class="absolute w-[95px] h-[92px] flex justify-center items-center"
-      :style="{ left: `${obstacle1PosX}%`, top: `${obstacle1PosY}%` }"
-    ></div>
-    <div
-      id="obstacle2"
-      ref="obstacle2"
-      class="absolute w-[380px] h-[55px]"
-      :style="{ left: `${obstacle2PosX}%`, top: `${obstacle2PosY}%` }"
-    ></div>
-    <div
-      id="obstacle3"
-      ref="obstacle3"
-      class="absolute w-[380px] h-[55px]"
-      :style="{ left: `${obstacle3PosX}%`, top: `${obstacle3PosY}%` }"
-    ></div>
-    <div
-      id="obstacle4"
-      ref="obstacle4"
-      class="absolute w-[50px] h-[150px]"
-      :style="{ left: `${obstacle4PosX}%`, top: `${obstacle4PosY}%` }"
-    ></div>
-    <div
-      id="obstacle5"
-      ref="obstacle5"
-      class="absolute w-[432px] h-[55px]"
-      :style="{ left: `${obstacle5PosX}%`, top: `${obstacle5PosY}%` }"
-    ></div>
+      <div class="text-white">Movement</div>
+      <div
+        id="character"
+        ref="character"
+        class="h-20 w-20 absolute z-50 flex justify-center items-center"
+        :style="{ left: `${positionX}px`, top: `${positionY}px` }"
+      >
+        <img src="/test-char.gif" alt="player image" class="w-20 h-20" />
+      </div>
+      <div
+        id="obstacle1"
+        ref="obstacle1"
+        class="absolute w-[50px] h-[52px]"
+        :style="{ left: `${obstacle1PosX}%`, top: `${obstacle1PosY}%` }"
+      ></div>
+      <div
+        id="obstacle2"
+        ref="obstacle2"
+        class="absolute w-[230px] h-[35px]"
+        :style="{ left: `${obstacle2PosX}%`, top: `${obstacle2PosY}%` }"
+      ></div>
+      <div
+        id="obstacle3"
+        ref="obstacle3"
+        class="absolute w-[250px] h-[35px]"
+        :style="{ left: `${obstacle3PosX}%`, top: `${obstacle3PosY}%` }"
+      ></div>
+      <div
+        id="obstacle4"
+        ref="obstacle4"
+        class="absolute w-[35px] h-[86px]"
+        :style="{ left: `${obstacle4PosX}%`, top: `${obstacle4PosY}%` }"
+      ></div>
+      <div
+        id="obstacle5"
+        ref="obstacle5"
+        class="absolute w-[260px] h-[35px]"
+        :style="{ left: `${obstacle5PosX}%`, top: `${obstacle5PosY}%` }"
+      ></div>
+    </section>
   </section>
 </template>
