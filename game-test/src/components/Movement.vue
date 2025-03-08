@@ -5,6 +5,9 @@ import { useRoute, useRouter } from "vue-router";
 const router = useRouter();
 const route = useRoute();
 
+const windowWidth = ref(window.innerWidth);
+const windowWHeight = ref(window.innerHeight);
+
 let alreadyX = 0;
 let alreadyY = 0;
 
@@ -23,8 +26,8 @@ if (route.params.positionY) {
   alreadyY = Number(route.params.positionY);
 }
 
-const positionX = alreadyX !== 0 ? ref(alreadyX) : ref(window.innerWidth / 4);
-const positionY = alreadyY !== 0 ? ref(alreadyY) : ref(window.innerHeight / 2);
+const positionX = alreadyX !== 0 ? ref(alreadyX) : ref(575);
+const positionY = alreadyY !== 0 ? ref(alreadyY) : ref(460);
 
 const obstacle1PosX = 25.3;
 const obstacle1PosY = 44;
@@ -137,15 +140,24 @@ function moveDot(input: KeyboardEvent) {
 
 onMounted(() => {
   window.addEventListener("keydown", moveDot);
+  window.addEventListener("resize", () => {
+    windowWidth.value = window.innerWidth;
+  });
 });
 
 onUnmounted(() => {
   window.removeEventListener("keydown", moveDot);
+  window.removeEventListener("resize", () => {
+    windowWidth.value = window.innerWidth;
+  });
 });
 </script>
 
 <template>
-  <section class="bg-black h-screen flex justify-center items-center">
+  <section
+    v-if="windowWidth >= 1150 || windowWHeight >= 920"
+    class="bg-black min-h-screen flex justify-center items-center"
+  >
     <section
       class="h-[920px] w-[1150px] max-w-[1150px] mx-auto overflow-x-hidden relative bg-[url(/maps/route-101.png)] bg-no-repeat bg-cover bg-center"
     >
@@ -190,4 +202,5 @@ onUnmounted(() => {
       ></div>
     </section>
   </section>
+  <section v-else>écran pas assez grand !</section>
 </template>
