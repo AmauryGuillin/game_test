@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import { onMounted, onUnmounted, ref } from "vue";
-import { useRoute, useRouter } from "vue-router";
+//import { useRoute, useRouter } from "vue-router";
+import { useRoute } from "vue-router";
 
-const router = useRouter();
+//const router = useRouter();
 const route = useRoute();
 
 const windowWidth = ref(window.innerWidth);
