@@ -10,6 +10,10 @@ let alreadyY = 0;
 
 const character = ref<HTMLElement | null>(null);
 const obstacle1 = ref<HTMLElement | null>(null);
+const obstacle2 = ref<HTMLElement | null>(null);
+const obstacle3 = ref<HTMLElement | null>(null);
+const obstacle4 = ref<HTMLElement | null>(null);
+const obstacle5 = ref<HTMLElement | null>(null);
 
 if (route.params.positionX) {
   alreadyX = Number(route.params.positionX);
@@ -25,13 +29,30 @@ const positionY = alreadyY !== 0 ? ref(alreadyY) : ref(window.innerHeight / 2);
 const obstacle1PosX = 25;
 const obstacle1PosY = 40;
 
+const obstacle2PosX = 40;
+const obstacle2PosY = 85;
+
+const obstacle3PosX = 35;
+const obstacle3PosY = 14;
+
+const obstacle4PosX = 32.5;
+const obstacle4PosY = 14;
+
+const obstacle5PosX = 10;
+const obstacle5PosY = 24;
+
 function checkCollision(newX: number, newY: number) {
   const player = character.value;
-  const obstacle = obstacle1.value;
+  const obstacles = [
+    obstacle1.value,
+    obstacle2.value,
+    obstacle3.value,
+    obstacle4.value,
+    obstacle5.value,
+  ];
 
-  if (player && obstacle) {
+  if (player) {
     const charRect = player.getBoundingClientRect();
-    const obsRect = obstacle.getBoundingClientRect();
 
     const nextCharRect = {
       left: charRect.left + (newX - positionX.value),
@@ -40,12 +61,22 @@ function checkCollision(newX: number, newY: number) {
       bottom: charRect.bottom + (newY - positionY.value),
     };
 
-    return !(
-      nextCharRect.right < obsRect.left ||
-      nextCharRect.left > obsRect.right ||
-      nextCharRect.bottom < obsRect.top ||
-      nextCharRect.top > obsRect.bottom
-    );
+    for (const obstacle of obstacles) {
+      if (obstacle) {
+        const obsRect = obstacle.getBoundingClientRect();
+
+        if (
+          !(
+            nextCharRect.right < obsRect.left ||
+            nextCharRect.left > obsRect.right ||
+            nextCharRect.bottom < obsRect.top ||
+            nextCharRect.top > obsRect.bottom
+          )
+        ) {
+          return true;
+        }
+      }
+    }
   }
   return false;
 }
@@ -115,16 +146,40 @@ onUnmounted(() => {
     <div
       id="character"
       ref="character"
-      class="h-24 w-24 absolute z-50 flex justify-center items-center"
+      class="h-20 w-20 absolute z-50 flex justify-center items-center"
       :style="{ left: `${positionX}px`, top: `${positionY}px` }"
     >
-      <img src="/test-char.gif" alt="player image" class="w-24 h-24" />
+      <img src="/test-char.gif" alt="player image" class="w-20 h-20" />
     </div>
     <div
       id="obstacle1"
       ref="obstacle1"
       class="absolute w-[95px] h-[92px] flex justify-center items-center"
       :style="{ left: `${obstacle1PosX}%`, top: `${obstacle1PosY}%` }"
+    ></div>
+    <div
+      id="obstacle2"
+      ref="obstacle2"
+      class="absolute w-[380px] h-[55px]"
+      :style="{ left: `${obstacle2PosX}%`, top: `${obstacle2PosY}%` }"
+    ></div>
+    <div
+      id="obstacle3"
+      ref="obstacle3"
+      class="absolute w-[380px] h-[55px]"
+      :style="{ left: `${obstacle3PosX}%`, top: `${obstacle3PosY}%` }"
+    ></div>
+    <div
+      id="obstacle4"
+      ref="obstacle4"
+      class="absolute w-[50px] h-[150px]"
+      :style="{ left: `${obstacle4PosX}%`, top: `${obstacle4PosY}%` }"
+    ></div>
+    <div
+      id="obstacle5"
+      ref="obstacle5"
+      class="absolute w-[432px] h-[55px]"
+      :style="{ left: `${obstacle5PosX}%`, top: `${obstacle5PosY}%` }"
     ></div>
   </section>
 </template>
