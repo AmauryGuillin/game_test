@@ -13,11 +13,7 @@ let alreadyX = 0;
 let alreadyY = 0;
 
 const character = ref<HTMLElement | null>(null);
-const obstacle1 = ref<HTMLElement | null>(null);
-const obstacle2 = ref<HTMLElement | null>(null);
-const obstacle3 = ref<HTMLElement | null>(null);
-const obstacle4 = ref<HTMLElement | null>(null);
-const obstacle5 = ref<HTMLElement | null>(null);
+const obstacles = ref<HTMLElement[]>([]);
 
 if (route.params.positionX) {
   alreadyX = Number(route.params.positionX);
@@ -30,59 +26,37 @@ if (route.params.positionY) {
 const positionX = alreadyX !== 0 ? ref(alreadyX) : ref(575);
 const positionY = alreadyY !== 0 ? ref(alreadyY) : ref(460);
 
-const obstacle1PosX = 25.3;
-const obstacle1PosY = 44;
-
-const obstacle2PosX = 40;
-const obstacle2PosY = 71;
-
-const obstacle3PosX = 35;
-const obstacle3PosY = 28.6;
-
-const obstacle4PosX = 32.5;
-const obstacle4PosY = 28.6;
-
-const obstacle5PosX = 10;
-const obstacle5PosY = 34;
+const obstacleData = [
+  { posX: 25.3, posY: 44, width: 50, height: 52 },
+  { posX: 40, posY: 71, width: 230, height: 35 },
+  { posX: 35, posY: 28.6, width: 250, height: 35 },
+  { posX: 32.5, posY: 28.6, width: 35, height: 86 },
+  { posX: 10, posY: 34, width: 260, height: 35 },
+];
 
 function checkCollision(newX: number, newY: number) {
   const player = character.value;
-  const obstacles = [
-    obstacle1.value,
-    obstacle2.value,
-    obstacle3.value,
-    obstacle4.value,
-    obstacle5.value,
-  ];
 
-  if (player) {
-    const charRect = player.getBoundingClientRect();
+  if (!player) return false;
 
-    const nextCharRect = {
-      left: charRect.left + (newX - positionX.value),
-      right: charRect.right + (newX - positionX.value),
-      top: charRect.top + (newY - positionY.value),
-      bottom: charRect.bottom + (newY - positionY.value),
-    };
+  const charRect = player.getBoundingClientRect();
 
-    for (const obstacle of obstacles) {
-      if (obstacle) {
-        const obsRect = obstacle.getBoundingClientRect();
+  const nextCharRect = {
+    left: charRect.left + (newX - positionX.value),
+    right: charRect.right + (newX - positionX.value),
+    top: charRect.top + (newY - positionY.value),
+    bottom: charRect.bottom + (newY - positionY.value),
+  };
 
-        if (
-          !(
-            nextCharRect.right < obsRect.left ||
-            nextCharRect.left > obsRect.right ||
-            nextCharRect.bottom < obsRect.top ||
-            nextCharRect.top > obsRect.bottom
-          )
-        ) {
-          return true;
-        }
-      }
-    }
-  }
-  return false;
+  return obstacles.value.some((obstacle) => {
+    const obsRect = obstacle.getBoundingClientRect();
+    return !(
+      nextCharRect.right < obsRect.left ||
+      nextCharRect.left > obsRect.right ||
+      nextCharRect.bottom < obsRect.top ||
+      nextCharRect.top > obsRect.bottom
+    );
+  });
 }
 
 function moveDot(input: KeyboardEvent) {
@@ -115,8 +89,8 @@ function moveDot(input: KeyboardEvent) {
     console.log("hors limites X droite");
     //positionX.value = 1150 - positionX.value;
     alert("Work in progress :)\nPlayer position is reset");
-    positionX.value = window.innerWidth / 4;
-    positionY.value = window.innerHeight / 2;
+    positionX.value = 575;
+    positionY.value = 460;
     //router.push(`/map3/${positionX.value}/${positionY.value}`);
   }
 
@@ -124,18 +98,23 @@ function moveDot(input: KeyboardEvent) {
     console.log("hors limites X gauche");
     //positionX.value = 1150 - positionX.value - 200;
     alert("Work in progress :)\nPlayer position is reset");
-    positionX.value = window.innerWidth / 4;
-    positionY.value = window.innerHeight / 2;
+    positionX.value = 575;
+    positionY.value = 460;
     //router.push(`/map2/${positionX.value}/${positionY.value}`);
   }
 
   if (positionY.value >= 920 - 100) {
-    console.log(window.innerHeight);
     console.log("hors limites Y inférieure");
+    alert("Work in progress :)\nPlayer position is reset");
+    positionX.value = 575;
+    positionY.value = 460;
   }
 
   if (positionY.value < 0) {
     console.log("hors limites Y supérieure");
+    alert("Work in progress :)\nPlayer position is reset");
+    positionX.value = 575;
+    positionY.value = 460;
   }
 }
 
@@ -144,6 +123,7 @@ onMounted(() => {
   window.addEventListener("resize", () => {
     windowWidth.value = window.innerWidth;
   });
+  obstacles.value = Array.from(document.querySelectorAll(".obstacle"));
 });
 
 onUnmounted(() => {
@@ -157,10 +137,13 @@ onUnmounted(() => {
 <template>
   <section
     v-if="windowWidth >= 1150 || windowWHeight >= 920"
-    class="bg-black min-h-screen flex justify-center items-center"
+    class="bg-black min-h-screen flex flex-col justify-center items-center"
   >
+    <section class="animate-pulse text-red-500 font-bold text-4xl my-4">
+      WORK IN PROGRESS
+    </section>
     <section
-      class="h-[920px] w-[1150px] max-w-[1150px] mx-auto overflow-x-hidden relative bg-[url(/maps/route-101.png)] bg-no-repeat bg-cover bg-center"
+      class="h-[920px] w-[1150px] max-w-[1150px] mx-auto overflow-x-hidden relative bg-[url(/maps/route-101.png)] bg-no-repeat bg-cover bg-center rounded-3xl"
     >
       <div class="text-white">Movement</div>
       <div
@@ -172,34 +155,15 @@ onUnmounted(() => {
         <img src="/test-char.gif" alt="player image" class="w-20 h-20" />
       </div>
       <div
-        id="obstacle1"
-        ref="obstacle1"
-        class="absolute w-[50px] h-[52px]"
-        :style="{ left: `${obstacle1PosX}%`, top: `${obstacle1PosY}%` }"
-      ></div>
-      <div
-        id="obstacle2"
-        ref="obstacle2"
-        class="absolute w-[230px] h-[35px]"
-        :style="{ left: `${obstacle2PosX}%`, top: `${obstacle2PosY}%` }"
-      ></div>
-      <div
-        id="obstacle3"
-        ref="obstacle3"
-        class="absolute w-[250px] h-[35px]"
-        :style="{ left: `${obstacle3PosX}%`, top: `${obstacle3PosY}%` }"
-      ></div>
-      <div
-        id="obstacle4"
-        ref="obstacle4"
-        class="absolute w-[35px] h-[86px]"
-        :style="{ left: `${obstacle4PosX}%`, top: `${obstacle4PosY}%` }"
-      ></div>
-      <div
-        id="obstacle5"
-        ref="obstacle5"
-        class="absolute w-[260px] h-[35px]"
-        :style="{ left: `${obstacle5PosX}%`, top: `${obstacle5PosY}%` }"
+        v-for="(obs, index) in obstacleData"
+        :key="index"
+        class="absolute obstacle"
+        :style="{
+          left: `${obs.posX}%`,
+          top: `${obs.posY}%`,
+          width: `${obs.width}px`,
+          height: `${obs.height}px`,
+        }"
       ></div>
     </section>
   </section>
