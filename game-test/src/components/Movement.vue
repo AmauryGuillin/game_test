@@ -9,6 +9,8 @@ const route = useRoute();
 const windowWidth = ref(window.innerWidth);
 const windowWHeight = ref(window.innerHeight);
 
+const isItboxesShown = ref(false);
+
 let alreadyX = 0;
 let alreadyY = 0;
 
@@ -33,6 +35,14 @@ const obstacleData = [
   { posX: 32.5, posY: 28.6, width: 35, height: 86 },
   { posX: 10, posY: 34, width: 260, height: 35 },
 ];
+
+function manageHitboxesDisplay() {
+  if (isItboxesShown.value) {
+    isItboxesShown.value = false;
+  } else {
+    isItboxesShown.value = true;
+  }
+}
 
 function checkCollision(newX: number, newY: number) {
   const player = character.value;
@@ -139,8 +149,18 @@ onUnmounted(() => {
     v-if="windowWidth >= 1150 || windowWHeight >= 920"
     class="bg-black min-h-screen flex flex-col justify-center items-center"
   >
-    <section class="animate-pulse text-red-500 font-bold text-4xl my-4">
-      WORK IN PROGRESS
+    <section class="my-4">
+      <h1 class="animate-pulse text-red-500 font-bold text-4xl p-2">
+        WORK IN PROGRESS
+      </h1>
+      <div class="w-full flex justify-center items-center">
+        <button
+          class="text-white border-2 rounded-lg p-2 cursor-pointer hover:bg-gray-800"
+          @click="manageHitboxesDisplay()"
+        >
+          Show hitboxes
+        </button>
+      </div>
     </section>
     <section
       class="h-[920px] w-[1150px] max-w-[1150px] mx-auto overflow-x-hidden relative bg-[url(/maps/route-101.png)] bg-no-repeat bg-cover bg-center rounded-3xl"
@@ -150,6 +170,7 @@ onUnmounted(() => {
         id="character"
         ref="character"
         class="h-20 w-20 absolute z-50 flex justify-center items-center"
+        :class="{ 'border-2 border-red-500': isItboxesShown }"
         :style="{ left: `${positionX}px`, top: `${positionY}px` }"
       >
         <img src="/test-char.gif" alt="player image" class="w-20 h-20" />
@@ -158,6 +179,7 @@ onUnmounted(() => {
         v-for="(obs, index) in obstacleData"
         :key="index"
         class="absolute obstacle"
+        :class="{ 'border-4 border-red-500': isItboxesShown }"
         :style="{
           left: `${obs.posX}%`,
           top: `${obs.posY}%`,
