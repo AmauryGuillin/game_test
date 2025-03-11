@@ -1,20 +1,24 @@
 <script setup lang="ts">
+import { io } from "socket.io-client";
 import { onMounted, onUnmounted, ref } from "vue";
 //import { useRoute, useRouter } from "vue-router";
 import { useRoute } from "vue-router";
 
 //const router = useRouter();
 const route = useRoute();
+const socket = io("https://socket-test-production-cb2a.up.railway.app/");
 
 const windowWidth = ref(window.innerWidth);
 const windowWHeight = ref(window.innerHeight);
 
 const isItboxesShown = ref(false);
+const myPlayerId = ref(null);
 
 let alreadyX = 0;
 let alreadyY = 0;
 
 const character = ref<HTMLElement | null>(null);
+const otherPlayers = ref<HTMLElement[]>([]);
 const obstacles = ref<HTMLElement[]>([]);
 
 if (route.params.positionX) {
@@ -28,6 +32,14 @@ if (route.params.positionY) {
 const positionX = alreadyX !== 0 ? ref(alreadyX) : ref(575);
 const positionY = alreadyY !== 0 ? ref(alreadyY) : ref(460);
 
+type playersData = {
+  id: number;
+  posX: number;
+  posY: number;
+};
+
+const otherPlayersData = ref<playersData[]>([]);
+
 const obstacleData = [
   { posX: 25.3, posY: 44, width: 50, height: 52 },
   { posX: 40, posY: 71, width: 230, height: 35 },
@@ -35,6 +47,20 @@ const obstacleData = [
   { posX: 32.5, posY: 28.6, width: 35, height: 86 },
   { posX: 10, posY: 34, width: 260, height: 35 },
 ];
+
+function connectToWebSocket(data: string) {
+  socket.emit("message", data);
+  socket.on("instanciatePlayer", (playersList: playersData[]) => {
+    otherPlayersData.value = playersList;
+  });
+}
+
+function sendPlayerPosition(posX: number, posY: number) {
+  socket.emit("move", posX, posY);
+  socket.on("updatePlayerPosition", (updatedPlayers) => {
+    otherPlayersData.value = Object.values(updatedPlayers);
+  });
+}
 
 function manageHitboxesDisplay() {
   if (isItboxesShown.value) {
@@ -45,26 +71,27 @@ function manageHitboxesDisplay() {
 }
 
 function checkCollision(newX: number, newY: number) {
-  const player = character.value;
-
-  if (!player) return false;
-
-  const charRect = player.getBoundingClientRect();
+  const playerWidth = 80; // Largeur approximative du joueur (h-20 w-20)
+  const playerHeight = 80; // Hauteur approximative du joueur
 
   const nextCharRect = {
-    left: charRect.left + (newX - positionX.value),
-    right: charRect.right + (newX - positionX.value),
-    top: charRect.top + (newY - positionY.value),
-    bottom: charRect.bottom + (newY - positionY.value),
+    left: newX,
+    right: newX + playerWidth,
+    top: newY,
+    bottom: newY + playerHeight,
   };
 
-  return obstacles.value.some((obstacle) => {
-    const obsRect = obstacle.getBoundingClientRect();
+  return obstacleData.some((obs) => {
+    const obsLeft = (obs.posX / 100) * 1150;
+    const obsTop = (obs.posY / 100) * 920;
+    const obsRight = obsLeft + obs.width;
+    const obsBottom = obsTop + obs.height;
+
     return !(
-      nextCharRect.right < obsRect.left ||
-      nextCharRect.left > obsRect.right ||
-      nextCharRect.bottom < obsRect.top ||
-      nextCharRect.top > obsRect.bottom
+      nextCharRect.right < obsLeft ||
+      nextCharRect.left > obsRight ||
+      nextCharRect.bottom < obsTop ||
+      nextCharRect.top > obsBottom
     );
   });
 }
@@ -73,26 +100,27 @@ function moveDot(input: KeyboardEvent) {
   let newX = positionX.value;
   let newY = positionY.value;
 
-  if (input.key === "ArrowUp") {
-    newY -= 20;
-    if (!checkCollision(newX, newY)) {
-      positionY.value = newY;
+  if (input.key === "ArrowUp") newY -= 20;
+  else if (input.key === "ArrowDown") newY += 20;
+  else if (input.key === "ArrowLeft") newX -= 20;
+  else if (input.key === "ArrowRight") newX += 20;
+  else return; // Si ce n'est pas une touche fléchée, on arrête là
+
+  // Vérification des collisions
+  if (!checkCollision(newX, newY)) {
+    positionX.value = newX;
+    positionY.value = newY;
+
+    // Mise à jour des données du joueur dans otherPlayersData
+    for (const player of otherPlayersData.value) {
+      if (player.id === myPlayerId.value) {
+        player.posX = newX;
+        player.posY = newY;
+      }
     }
-  } else if (input.key === "ArrowDown") {
-    newY += 20;
-    if (!checkCollision(newX, newY)) {
-      positionY.value = newY;
-    }
-  } else if (input.key === "ArrowLeft") {
-    newX -= 20;
-    if (!checkCollision(newX, newY)) {
-      positionX.value = newX;
-    }
-  } else if (input.key === "ArrowRight") {
-    newX += 20;
-    if (!checkCollision(newX, newY)) {
-      positionX.value = newX;
-    }
+
+    // Envoi de la position mise à jour au serveur
+    sendPlayerPosition(newX, newY);
   }
 
   if (positionX.value >= 1150 - 100) {
@@ -134,6 +162,11 @@ onMounted(() => {
     windowWidth.value = window.innerWidth;
   });
   obstacles.value = Array.from(document.querySelectorAll(".obstacle"));
+  otherPlayers.value = Array.from(document.querySelectorAll(".other-players"));
+  socket.on("yourId", (id) => {
+    myPlayerId.value = id;
+  });
+  connectToWebSocket("user connected");
 });
 
 onUnmounted(() => {
@@ -167,12 +200,20 @@ onUnmounted(() => {
     >
       <div class="text-white">Movement</div>
       <div
+        v-for="(player, index) in otherPlayersData"
         id="character"
         ref="character"
-        class="h-20 w-20 absolute z-50 flex justify-center items-center"
-        :class="{ 'border-2 border-red-500': isItboxesShown }"
-        :style="{ left: `${positionX}px`, top: `${positionY}px` }"
+        :key="index"
+        class="absolute other-players h-20 w-20 z-50 flex flex-col justify-center items-center"
+        :class="{
+          'border-2 border-red-500': isItboxesShown,
+          'opacity-50': player.id !== myPlayerId,
+        }"
+        :style="{ left: `${player.posX}px`, top: `${player.posY}px` }"
       >
+        <div>
+          {{ player.id === myPlayerId ? "Moi" : player.id }}
+        </div>
         <img src="/test-char.gif" alt="player image" class="w-20 h-20" />
       </div>
       <div
