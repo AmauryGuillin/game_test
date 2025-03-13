@@ -6,6 +6,7 @@ import { useRoute } from "vue-router";
 
 //const router = useRouter();
 const route = useRoute();
+//const socket = io("http://localhost:3000/");
 const socket = io("https://socket-test-production-cb2a.up.railway.app/");
 
 const windowWidth = ref(window.innerWidth);
@@ -31,6 +32,9 @@ if (route.params.positionY) {
 
 const positionX = alreadyX !== 0 ? ref(alreadyX) : ref(575);
 const positionY = alreadyY !== 0 ? ref(alreadyY) : ref(460);
+
+const messageDisplayed = ref(null);
+const messagePlayerID = ref(null);
 
 type playersData = {
   id: number;
@@ -61,6 +65,27 @@ function sendPlayerPosition(posX: number, posY: number) {
     otherPlayersData.value = Object.values(updatedPlayers);
   });
 }
+
+function openSendMessageBox() {
+  const message = prompt("What is your message?");
+  console.log(message);
+  if (message) {
+    sendChatMessage(message);
+  }
+}
+
+function sendChatMessage(message: string) {
+  socket.emit("sendChatMessage", message, myPlayerId.value);
+}
+
+socket.on("receiveChatMessage", (message, id) => {
+  messageDisplayed.value = message;
+  messagePlayerID.value = id;
+  setTimeout(() => {
+    messageDisplayed.value = null;
+    messagePlayerID.value = null;
+  }, 3000);
+});
 
 function manageHitboxesDisplay() {
   if (isItboxesShown.value) {
@@ -186,12 +211,18 @@ onUnmounted(() => {
       <h1 class="animate-pulse text-red-500 font-bold text-4xl p-2">
         WORK IN PROGRESS
       </h1>
-      <div class="w-full flex justify-center items-center">
+      <div class="w-full flex justify-center items-center gap-2">
         <button
           class="text-white border-2 rounded-lg p-2 cursor-pointer hover:bg-gray-800"
           @click="manageHitboxesDisplay()"
         >
           Show hitboxes
+        </button>
+        <button
+          class="text-white border-2 rounded-lg p-2 cursor-pointer hover:bg-gray-800"
+          @click="openSendMessageBox()"
+        >
+          Send a message
         </button>
       </div>
     </section>
@@ -211,7 +242,13 @@ onUnmounted(() => {
         }"
         :style="{ left: `${player.posX}px`, top: `${player.posY}px` }"
       >
-        <div>
+        <div class="relative w-full flex flex-col justify-center items-center">
+          <div
+            v-if="player.id === messagePlayerID"
+            class="absolute top-[-150%] left-[0%] min-w-[200%] w-fit z-50 bg-white text-black text-center font-bold"
+          >
+            {{ messageDisplayed }}
+          </div>
           {{ player.id === myPlayerId ? "Moi" : player.id }}
         </div>
         <img src="/test-char.gif" alt="player image" class="w-20 h-20" />
