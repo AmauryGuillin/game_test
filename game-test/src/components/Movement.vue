@@ -6,13 +6,13 @@ import { useRoute } from "vue-router";
 
 //const router = useRouter();
 const route = useRoute();
-//const socket = io("http://localhost:3000/");
-const socket = io("https://socket-test-production-cb2a.up.railway.app/");
+const socket = io("http://localhost:3000/");
+//const socket = io("https://socket-test-production-cb2a.up.railway.app/");
 
 const windowWidth = ref(window.innerWidth);
 const windowWHeight = ref(window.innerHeight);
 
-const isItboxesShown = ref(false);
+const isItboxesShown = ref(true);
 const myPlayerId = ref(null);
 
 let alreadyX = 0;
@@ -20,7 +20,11 @@ let alreadyY = 0;
 
 const character = ref<HTMLElement | null>(null);
 const otherPlayers = ref<HTMLElement[]>([]);
-const obstacles = ref<HTMLElement[]>([]);
+//const obstacles = ref<HTMLElement[]>([]);
+//const battlezones = ref<HTMLElement[]>([]);
+const isInBattleMode = ref<boolean>(false);
+const transitionToBattle = ref<boolean>(false);
+const canPlayerMove = ref<boolean>(true);
 
 if (route.params.positionX) {
   alreadyX = Number(route.params.positionX);
@@ -30,7 +34,7 @@ if (route.params.positionY) {
   alreadyY = Number(route.params.positionY);
 }
 
-const positionX = alreadyX !== 0 ? ref(alreadyX) : ref(575);
+const positionX = alreadyX !== 0 ? ref(alreadyX) : ref(520);
 const positionY = alreadyY !== 0 ? ref(alreadyY) : ref(460);
 
 const messageDisplayed = ref(null);
@@ -51,6 +55,8 @@ const obstacleData = [
   { posX: 32.5, posY: 28.6, width: 35, height: 86 },
   { posX: 10, posY: 34, width: 260, height: 35 },
 ];
+
+const battleZonesData = [{ posX: 55, posY: 50, width: 290, height: 180 }];
 
 function connectToWebSocket(data: string) {
   socket.emit("message", data);
@@ -95,9 +101,55 @@ function manageHitboxesDisplay() {
   }
 }
 
+function setBattleModeOff() {
+  isInBattleMode.value = false;
+  canPlayerMove.value = true;
+}
+
+function battleTest() {
+  if (checkBattleZone(positionX.value, positionY.value)) {
+    const randomNumber = Math.round(Math.random() * 100);
+    if (randomNumber >= 95) {
+      canPlayerMove.value = false;
+      //alert("Un Pokémon sauvage apparaît !");
+      transitionToBattle.value = true;
+      setTimeout(() => {
+        transitionToBattle.value = false;
+        isInBattleMode.value = true;
+      }, 800);
+    }
+  }
+}
+
+function checkBattleZone(newX: number, newY: number) {
+  const playerWidth = 80;
+  const playerHeight = 80;
+
+  const nextCharRect = {
+    left: newX,
+    right: newX + playerWidth,
+    top: newY,
+    bottom: newY + playerHeight,
+  };
+
+  return battleZonesData.some((zone) => {
+    const zoneLeft = (zone.posX / 100) * 1150;
+    const zoneTop = (zone.posY / 100) * 920;
+    const zoneRight = zoneLeft + zone.width;
+    const zoneBottom = zoneTop + zone.height;
+
+    return !(
+      nextCharRect.right < zoneLeft ||
+      nextCharRect.left > zoneRight ||
+      nextCharRect.bottom < zoneTop ||
+      nextCharRect.top > zoneBottom
+    );
+  });
+}
+
 function checkCollision(newX: number, newY: number) {
-  const playerWidth = 80; // Largeur approximative du joueur (h-20 w-20)
-  const playerHeight = 80; // Hauteur approximative du joueur
+  const playerWidth = 80;
+  const playerHeight = 80;
 
   const nextCharRect = {
     left: newX,
@@ -122,6 +174,7 @@ function checkCollision(newX: number, newY: number) {
 }
 
 function moveDot(input: KeyboardEvent) {
+  if (!canPlayerMove.value) return;
   let newX = positionX.value;
   let newY = positionY.value;
 
@@ -129,14 +182,12 @@ function moveDot(input: KeyboardEvent) {
   else if (input.key === "ArrowDown") newY += 20;
   else if (input.key === "ArrowLeft") newX -= 20;
   else if (input.key === "ArrowRight") newX += 20;
-  else return; // Si ce n'est pas une touche fléchée, on arrête là
+  else return;
 
-  // Vérification des collisions
   if (!checkCollision(newX, newY)) {
     positionX.value = newX;
     positionY.value = newY;
 
-    // Mise à jour des données du joueur dans otherPlayersData
     for (const player of otherPlayersData.value) {
       if (player.id === myPlayerId.value) {
         player.posX = newX;
@@ -144,8 +195,11 @@ function moveDot(input: KeyboardEvent) {
       }
     }
 
-    // Envoi de la position mise à jour au serveur
     sendPlayerPosition(newX, newY);
+  }
+
+  if (checkBattleZone(newX, newY)) {
+    battleTest();
   }
 
   if (positionX.value >= 1150 - 100) {
@@ -186,7 +240,7 @@ onMounted(() => {
   window.addEventListener("resize", () => {
     windowWidth.value = window.innerWidth;
   });
-  obstacles.value = Array.from(document.querySelectorAll(".obstacle"));
+  //obstacles.value = Array.from(document.querySelectorAll(".obstacle"));
   otherPlayers.value = Array.from(document.querySelectorAll(".other-players"));
   socket.on("yourId", (id) => {
     myPlayerId.value = id;
@@ -204,8 +258,9 @@ onUnmounted(() => {
 
 <template>
   <section
-    v-if="windowWidth >= 1150 || windowWHeight >= 920"
+    v-if="(windowWidth >= 1150 || windowWHeight >= 920) && !isInBattleMode"
     class="bg-black min-h-screen flex flex-col justify-center items-center"
+    :class="{ 'animate-ping duration-1000': transitionToBattle }"
   >
     <section class="my-4">
       <h1 class="animate-pulse text-red-500 font-bold text-4xl p-2">
@@ -229,7 +284,6 @@ onUnmounted(() => {
     <section
       class="h-[920px] w-[1150px] max-w-[1150px] mx-auto overflow-x-hidden relative bg-[url(/maps/route-101.png)] bg-no-repeat bg-cover bg-center rounded-3xl"
     >
-      <div class="text-white">Movement</div>
       <div
         v-for="(player, index) in otherPlayersData"
         id="character"
@@ -265,7 +319,33 @@ onUnmounted(() => {
           height: `${obs.height}px`,
         }"
       ></div>
+      <div
+        v-for="(battleZone, index) in battleZonesData"
+        :key="index"
+        class="absolute battlezone"
+        :class="{ 'border-4 border-blue-600': isItboxesShown }"
+        :style="{
+          left: `${battleZone.posX}%`,
+          top: `${battleZone.posY}%`,
+          width: `${battleZone.width}px`,
+          height: `${battleZone.height}px`,
+        }"
+      ></div>
     </section>
   </section>
-  <section v-else>écran pas assez grand !</section>
+  <section v-if="!(windowWidth >= 1150 || windowWHeight >= 920)">
+    écran pas assez grand !
+  </section>
+  <section
+    v-if="isInBattleMode"
+    class="flex flex-col justify-center items-center bg-black h-screen gap-20"
+  >
+    <h1 class="text-white font-bold">mdr c'est un combat mon gars</h1>
+    <button
+      class="text-white border-2 rounded-lg p-2 cursor-pointer hover:bg-gray-800"
+      @click="setBattleModeOff()"
+    >
+      Retour
+    </button>
+  </section>
 </template>
