@@ -12,7 +12,7 @@ const socket = io("http://localhost:3000/");
 const windowWidth = ref(window.innerWidth);
 const windowWHeight = ref(window.innerHeight);
 
-const isItboxesShown = ref(true);
+const isItboxesShown = ref(false);
 const myPlayerId = ref(null);
 
 let alreadyX = 0;
