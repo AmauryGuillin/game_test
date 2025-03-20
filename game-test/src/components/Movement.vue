@@ -6,8 +6,8 @@ import { useRoute } from "vue-router";
 
 //const router = useRouter();
 const route = useRoute();
-const socket = io("http://localhost:3000/");
-//const socket = io("https://socket-test-production-cb2a.up.railway.app/");
+//const socket = io("http://localhost:3000/");
+const socket = io("https://socket-test-production-cb2a.up.railway.app/");
 
 const windowWidth = ref(window.innerWidth);
 const windowWHeight = ref(window.innerHeight);
