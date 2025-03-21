@@ -12,7 +12,7 @@ const socket = io("https://socket-test-production-cb2a.up.railway.app/");
 const windowWidth = ref(window.innerWidth);
 const windowWHeight = ref(window.innerHeight);
 
-const isItboxesShown = ref(false);
+const isItboxesShown = ref(true);
 const myPlayerId = ref(null);
 
 let alreadyX = 0;
@@ -51,12 +51,30 @@ const otherPlayersData = ref<playersData[]>([]);
 const obstacleData = [
   { posX: 25.3, posY: 44, width: 50, height: 52 },
   { posX: 40, posY: 71, width: 230, height: 35 },
-  { posX: 35, posY: 28.6, width: 250, height: 35 },
+  { posX: 35, posY: 28, width: 250, height: 35 },
   { posX: 32.5, posY: 28.6, width: 35, height: 86 },
   { posX: 10, posY: 34, width: 260, height: 35 },
+  { posX: 56, posY: 25, width: 100, height: 210 },
+  { posX: 56, posY: 30, width: 210, height: 120 },
+  { posX: 0, posY: 0, width: 110, height: 120 },
+  { posX: 0, posY: 25, width: 110, height: 445 },
+  { posX: 10, posY: 43, width: 110, height: 220 },
+  { posX: 0, posY: 87, width: 110, height: 120 },
+  { posX: 81, posY: 0, width: 220, height: 120 },
+  { posX: 90, posY: 10, width: 110, height: 120 },
+  { posX: 90, posY: 75, width: 110, height: 210 },
+  { posX: 60, posY: 86, width: 350, height: 110 },
+  { posX: 60, posY: 74, width: 110, height: 110 },
+  { posX: 10, posY: 99, width: 410, height: 1 },
 ];
 
-const battleZonesData = [{ posX: 55, posY: 50, width: 290, height: 180 }];
+const battleZonesData = [
+  { posX: 55, posY: 50, width: 165, height: 180 },
+  { posX: 69, posY: 50, width: 125, height: 330 },
+  { posX: 60, posY: 70, width: 100, height: 50 },
+  { posX: 80, posY: 57, width: 50, height: 150 },
+  { posX: 65, posY: 44, width: 110, height: 50 },
+];
 
 function connectToWebSocket(data: string) {
   socket.emit("message", data);
