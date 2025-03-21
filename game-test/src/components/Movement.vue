@@ -196,10 +196,10 @@ function moveDot(input: KeyboardEvent) {
   let newX = positionX.value;
   let newY = positionY.value;
 
-  if (input.key === "ArrowUp") newY -= 20;
-  else if (input.key === "ArrowDown") newY += 20;
-  else if (input.key === "ArrowLeft") newX -= 20;
-  else if (input.key === "ArrowRight") newX += 20;
+  if (input.key === "ArrowUp" || input.key === "z") newY -= 20;
+  else if (input.key === "ArrowDown" || input.key === "s") newY += 20;
+  else if (input.key === "ArrowLeft" || input.key === "q") newX -= 20;
+  else if (input.key === "ArrowRight" || input.key === "d") newX += 20;
   else return;
 
   if (!checkCollision(newX, newY)) {
