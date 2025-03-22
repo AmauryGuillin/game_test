@@ -19,14 +19,14 @@ function goToVideoTitle() {
   }
 
   if (video.value && video.value.currentTime > 60) {
-    const playerUsername = prompt("enter a nickname");
-
-    router.push(`/movement/${playerUsername}`);
+    const playerUsername = prompt("Enter a username");
+    if (playerUsername) router.push(`/movement/${playerUsername}`);
   }
 }
 
 onMounted(() => {
   video.value = document.getElementById("intro-video") as HTMLVideoElement;
+  video.value.volume = 0.1;
 });
 </script>
 
@@ -40,7 +40,6 @@ onMounted(() => {
       <video
         id="intro-video"
         class="h-[900px] w-[1150px] max-w-[1150px]"
-        mute
         autoplay
         loop
         preload="auto"
