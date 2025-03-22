@@ -6,15 +6,14 @@ import { useRoute } from "vue-router";
 
 //const router = useRouter();
 const route = useRoute();
-const socket = io("http://localhost:3000/");
-//const socket = io("https://socket-test-production-cb2a.up.railway.app/");
+//const socket = io("http://localhost:3000/");
+const socket = io("https://socket-test-production-cb2a.up.railway.app/");
 
 const windowWidth = ref(window.innerWidth);
 const windowWHeight = ref(window.innerHeight);
 
 const isItboxesShown = ref(false);
 const myPlayerId = ref(null);
-const myPlayerUsername = ref(null);
 
 let alreadyX = 0;
 let alreadyY = 0;
@@ -330,7 +329,11 @@ onUnmounted(() => {
           >
             {{ messageDisplayed }}
           </div>
-          {{ player.id === myPlayerId ? "moi" : player.username }}
+          {{
+            player.id === myPlayerId
+              ? otherPlayersData.find((e) => e.id === myPlayerId)?.username
+              : player.username
+          }}
         </div>
         <img src="/test-char.gif" alt="player image" class="w-20 h-20" />
       </div>
