@@ -6,17 +6,19 @@ import { useRoute } from "vue-router";
 
 //const router = useRouter();
 const route = useRoute();
-//const socket = io("http://localhost:3000/");
-const socket = io("https://socket-test-production-cb2a.up.railway.app/");
+const socket = io("http://localhost:3000/");
+//const socket = io("https://socket-test-production-cb2a.up.railway.app/");
 
 const windowWidth = ref(window.innerWidth);
 const windowWHeight = ref(window.innerHeight);
 
 const isItboxesShown = ref(false);
 const myPlayerId = ref(null);
+const myPlayerUsername = ref(null);
 
 let alreadyX = 0;
 let alreadyY = 0;
+let playerUsername: string | string[];
 
 const character = ref<HTMLElement | null>(null);
 const otherPlayers = ref<HTMLElement[]>([]);
@@ -42,6 +44,7 @@ const messagePlayerID = ref(null);
 
 type playersData = {
   id: number;
+  username: string;
   posX: number;
   posY: number;
 };
@@ -76,9 +79,10 @@ const battleZonesData = [
   { posX: 65, posY: 44, width: 110, height: 50 },
 ];
 
-function connectToWebSocket(data: string) {
-  socket.emit("message", data);
+function connectToWebSocket(data: string | string[]) {
+  socket.emit("playerUsername", data);
   socket.on("instanciatePlayer", (playersList: playersData[]) => {
+    console.log(playersList);
     otherPlayersData.value = playersList;
   });
 }
@@ -258,12 +262,17 @@ onMounted(() => {
   window.addEventListener("resize", () => {
     windowWidth.value = window.innerWidth;
   });
+
   //obstacles.value = Array.from(document.querySelectorAll(".obstacle"));
+
   otherPlayers.value = Array.from(document.querySelectorAll(".other-players"));
+
+  if (route.params.playerUsername) playerUsername = route.params.playerUsername;
+
   socket.on("yourId", (id) => {
     myPlayerId.value = id;
   });
-  connectToWebSocket("user connected");
+  connectToWebSocket(playerUsername);
 });
 
 onUnmounted(() => {
@@ -321,7 +330,7 @@ onUnmounted(() => {
           >
             {{ messageDisplayed }}
           </div>
-          {{ player.id === myPlayerId ? "Moi" : player.id }}
+          {{ player.id === myPlayerId ? "moi" : player.username }}
         </div>
         <img src="/test-char.gif" alt="player image" class="w-20 h-20" />
       </div>
